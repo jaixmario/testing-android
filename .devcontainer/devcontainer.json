@@ -14,5 +14,8 @@
       ]
     }
   },
-  "postCreateCommand": "sdk install gradle"
+  "postCreateCommand": "sdk install gradle && apt-get update && apt-get install -y wget unzip && wget https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip -O cmdline-tools.zip && mkdir -p /usr/local/android-sdk/cmdline-tools && unzip cmdline-tools.zip -d /usr/local/android-sdk/cmdline-tools && mv /usr/local/android-sdk/cmdline-tools/cmdline-tools /usr/local/android-sdk/cmdline-tools/latest && yes | /usr/local/android-sdk/cmdline-tools/latest/bin/sdkmanager --sdk_root=/usr/local/android-sdk 'platform-tools' 'platforms;android-34' 'build-tools;34.0.0'",
+  "remoteEnv": {
+    "ANDROID_SDK_ROOT": "/usr/local/android-sdk"
+  }
 }

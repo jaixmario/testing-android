@@ -1,9 +1,18 @@
 {
-  "name": "Android SDK",
-  "image": "ghcr.io/openboxes/openboxes-android-sdk:latest",
+  "name": "Kotlin Android DevContainer",
+  "image": "ghcr.io/android/sandbox:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "11"
+    }
+  },
   "customizations": {
     "vscode": {
-      "extensions": ["vscjava.vscode-java-pack"]
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "android.android-dev-ext",
+        "fwcd.kotlin"
+      ]
     }
   }
 }

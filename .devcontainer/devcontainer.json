@@ -1,18 +1,13 @@
 {
   "name": "Kotlin Dev",
-  "image": "mcr.microsoft.com/devcontainers/java:11-bullseye",
-  "features": {
-    "ghcr.io/devcontainers/features/gradle:1": {},
-    "ghcr.io/devcontainers/features/android-sdk:1": {}
-  },
+  "image": "mcr.microsoft.com/devcontainers/java:11",
   "customizations": {
     "vscode": {
       "extensions": [
         "vscjava.vscode-java-pack",
-        "fwcd.kotlin",
-        "ms-androidtools.vscode-android"
+        "fwcd.kotlin"
       ]
     }
   },
-  "postCreateCommand": "sdkmanager --licenses"
+  "postCreateCommand": "sdk install gradle"
 }

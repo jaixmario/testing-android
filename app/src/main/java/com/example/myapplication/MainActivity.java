@@ -21,9 +21,10 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView keyTextView, statusTextView;
+    TextView keyTextView, statusTextView, ipTextView;
     Button fetchButton, copyButton, checkButton;
-    EditText keyInput, ipInput;
+    EditText keyInput;
+    String userIP = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +36,10 @@ public class MainActivity extends AppCompatActivity {
         copyButton = findViewById(R.id.copyButton);
         checkButton = findViewById(R.id.checkButton);
         keyInput = findViewById(R.id.keyInput);
-        ipInput = findViewById(R.id.ipInput);
         statusTextView = findViewById(R.id.statusTextView);
+        ipTextView = findViewById(R.id.ipTextView);
+
+        fetchPublicIP();
 
         fetchButton.setOnClickListener(v -> fetchKey());
 
@@ -51,6 +54,32 @@ public class MainActivity extends AppCompatActivity {
         });
 
         checkButton.setOnClickListener(v -> checkKey());
+    }
+
+    private void fetchPublicIP() {
+        new Thread(() -> {
+            try {
+                URL url = new URL("https://api.ipify.org?format=json");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                JSONObject json = new JSONObject(response.toString());
+                userIP = json.getString("ip");
+
+                runOnUiThread(() -> ipTextView.setText("Your IP: " + userIP));
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> ipTextView.setText("Failed to get IP"));
+            }
+        }).start();
     }
 
     private void fetchKey() {
@@ -82,16 +111,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkKey() {
         String key = keyInput.getText().toString().trim();
-        String ip = ipInput.getText().toString().trim();
 
-        if (key.isEmpty() || ip.isEmpty()) {
-            Toast.makeText(this, "Enter both Key and IP", Toast.LENGTH_SHORT).show();
+        if (key.isEmpty() || userIP.isEmpty()) {
+            Toast.makeText(this, "Enter Key or wait for IP", Toast.LENGTH_SHORT).show();
             return;
         }
 
         new Thread(() -> {
             try {
-                URL url = new URL("https://severv1.onrender.com/mypassword/jai/check/" + key + "/" + ip);
+                URL url = new URL("https://severv1.onrender.com/mypassword/jai/check/" + key + "/" + userIP);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
 
@@ -105,16 +133,19 @@ public class MainActivity extends AppCompatActivity {
 
                 JSONObject json = new JSONObject(response.toString());
                 String message = json.getString("message");
-                String remainingTime = json.has("remaining_time") ? json.getString("remaining_time") : "";
+                String resultText;
 
-                runOnUiThread(() -> {
-                    String status = message.equals("ACCESS GRANTED!") ? message + "\nTime Left: " + remainingTime : message;
-                    statusTextView.setText(status);
-                });
+                if (message.equals("ACCESS GRANTED!") && json.has("remaining_time")) {
+                    resultText = message + "\nTime Left: " + json.getString("remaining_time");
+                } else {
+                    resultText = message;
+                }
+
+                runOnUiThread(() -> statusTextView.setText(resultText));
 
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(this, "Check failed", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> statusTextView.setText("Check failed!"));
             }
         }).start();
     }

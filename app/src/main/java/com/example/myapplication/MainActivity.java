@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.widget.Button;
 import android.widget.Toast;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,18 +42,30 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Button sendButton = findViewById(R.id.sendButton);
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
 
-        sendButton.setOnClickListener(v -> {
-            checkStoragePermission();
-            sendTelegramMessage("Hello from Android app!");
-            File mapFile = generateFileMap();
-            if (mapFile != null) {
-                sendFileToTelegram(mapFile, "Here is the map of your Download folder:");
-            }
-        });
+    Button sendButton = findViewById(R.id.sendButton);
+    EditText customMessageInput = findViewById(R.id.customMessageInput);
+    Button customMessageButton = findViewById(R.id.customMessageButton);
+
+    sendButton.setOnClickListener(v -> {
+        checkStoragePermission();
+        sendTelegramMessage("Hello from Android app!");
+        File mapFile = generateFileMap();
+        if (mapFile != null) {
+            sendFileToTelegram(mapFile, "Here is the map of your Download folder:");
+        }
+    });
+
+    customMessageButton.setOnClickListener(v -> {
+        String customMessage = customMessageInput.getText().toString().trim();
+        if (!customMessage.isEmpty()) {
+            sendTelegramMessage(customMessage);
+        } else {
+            Toast.makeText(MainActivity.this, "Please enter a message", Toast.LENGTH_SHORT).show();
+        }
+    });
     }
 
     private void sendTelegramMessage(String message) {

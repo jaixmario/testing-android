@@ -40,13 +40,14 @@
         android:layout_marginTop="30dp"
         android:padding="10dp" />
 
-    <EditText
-        android:id="@+id/ipInput"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/ipTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Enter IP"
-        android:padding="10dp"
-        android:layout_marginTop="10dp" />
+        android:text="Fetching IP..."
+        android:textSize="16sp"
+        android:layout_marginTop="10dp"
+        android:padding="10dp" />
 
     <Button
         android:id="@+id/checkButton"

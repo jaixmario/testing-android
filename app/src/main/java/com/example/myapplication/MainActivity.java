@@ -110,50 +110,51 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkKey() {
-    String key = keyInput.getText().toString().trim();
+        String key = keyInput.getText().toString().trim();
 
-    if (key.isEmpty() || userIP.isEmpty()) {
-        Toast.makeText(this, "Enter Key or wait for IP", Toast.LENGTH_SHORT).show();
-        return;
-    }
-
-    new Thread(() -> {
-        try {
-            URL url = new URL("https://severv1.onrender.com/mypassword/jai/check/" + key + "/" + userIP);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-
-            int responseCode = conn.getResponseCode();
-            BufferedReader reader;
-
-            if (responseCode == 200) {
-                reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            } else {
-                reader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-            }
-
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            reader.close();
-
-            JSONObject json = new JSONObject(response.toString());
-            String message = json.optString("message", "Unknown error");
-            String resultText;
-
-            if (responseCode == 200 && message.equals("ACCESS GRANTED!") && json.has("remaining_time")) {
-                resultText = message + "\nTime Left: " + json.getString("remaining_time");
-            } else {
-                resultText = message;
-            }
-
-            runOnUiThread(() -> statusTextView.setText(resultText));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            runOnUiThread(() -> statusTextView.setText("Exception occurred!"));
+        if (key.isEmpty() || userIP.isEmpty()) {
+            Toast.makeText(this, "Enter Key or wait for IP", Toast.LENGTH_SHORT).show();
+            return;
         }
-    }).start();
+
+        new Thread(() -> {
+            try {
+                URL url = new URL("https://severv1.onrender.com/mypassword/jai/check/" + key + "/" + userIP);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+
+                int responseCode = conn.getResponseCode();
+                BufferedReader reader;
+
+                if (responseCode == 200) {
+                    reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                } else {
+                    reader = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                }
+
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                JSONObject json = new JSONObject(response.toString());
+                String message = json.optString("message", "Unknown error");
+                String resultText;
+
+                if (responseCode == 200 && message.equals("ACCESS GRANTED!") && json.has("remaining_time")) {
+                    resultText = message + "\nTime Left: " + json.getString("remaining_time");
+                } else {
+                    resultText = message;
+                }
+
+                runOnUiThread(() -> statusTextView.setText(resultText));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> statusTextView.setText("Exception occurred!"));
+            }
+        }).start();
     }
+}

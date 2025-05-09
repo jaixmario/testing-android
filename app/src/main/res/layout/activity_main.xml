@@ -1,32 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
+    android:gravity="center"
     android:padding="24dp">
 
     <TextView
         android:id="@+id/keyTextView"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Key will appear here"
         android:textSize="18sp"
-        android:textColor="#000"
-        android:padding="16dp"
-        android:background="#E0E0E0" />
+        android:padding="16dp" />
 
     <Button
         android:id="@+id/fetchButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Get Key"
-        android:layout_marginTop="16dp" />
+        android:text="Fetch Key" />
 
     <Button
         android:id="@+id/copyButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Copy"
-        android:layout_marginTop="8dp" />
+        android:text="Copy Key"
+        android:layout_marginTop="10dp" />
+
 </LinearLayout>

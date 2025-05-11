@@ -1,0 +1,36 @@
+name: Android Build (Windows)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build Debug APK
+    runs-on: windows-latest  # Changed to Windows runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # Removed chmod step (not needed on Windows)
+      
+      - name: Build debug APK
+        run: gradlew.bat assembleDebug  # Changed to Windows batch file
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug.apk
+          path: app\build\outputs\apk\debug\app-debug.apk  # Windows-style path

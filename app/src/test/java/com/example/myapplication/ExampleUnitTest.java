@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.jai.keypanel;
 
 import org.junit.Test;
 

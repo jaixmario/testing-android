@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.jai.keypanel;
 
 import android.os.Bundle;
 import android.view.View;
